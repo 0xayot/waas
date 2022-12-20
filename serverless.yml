@@ -30,3 +30,9 @@ functions:
       - http:
           path: hello
           method: get
+  generateAddress:
+    handler: handler.addressProvider
+    events:
+      - http:
+          path: address
+          method: post
