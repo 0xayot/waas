@@ -21,7 +21,7 @@ export const addressProvider: APIGatewayProxyHandler = async (
   try {
     const db = process.env.MONGO_URL;
     console.log(db);
-    mongoose.connect(db).then(() => console.log("Connected!"));
+    await mongoose.connect(db).then(() => console.log("Connected!"));
     const { email, password } = JSON.parse(event.body);
     // retrieve address
     const addressData = await generateBlockAddress();
@@ -35,6 +35,34 @@ export const addressProvider: APIGatewayProxyHandler = async (
         data: {
           address: addressData,
           email,
+        },
+      }),
+    };
+  } catch (error) {
+    console.log("error", error);
+  }
+};
+
+export const retrieveWallet: APIGatewayProxyHandler = async (
+  event,
+  context
+) => {
+  try {
+    const db = process.env.MONGO_URL;
+
+    await mongoose.connect(db).then(() => console.log("Connected!"));
+    const { email } = event.pathParameters;
+
+    const doc = await Wallet.findOne({ email });
+    // console.log("doc", doc);
+    const { public: publicKey, address } = doc.wallet;
+    return {
+      statusCode: 200,
+      body: JSON.stringify({
+        message: "Your address was generated successfully",
+        data: {
+          publicKey,
+          address,
         },
       }),
     };

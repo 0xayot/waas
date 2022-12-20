@@ -1,7 +1,7 @@
 # NOTE: update this with your service name
 service: serverless-typescript-starter
 
-# Create an optimized package for our functions 
+# Create an optimized package for our functions
 package:
   individually: true
 
@@ -29,6 +29,12 @@ functions:
     events:
       - http:
           path: hello
+          method: get
+  retrieveAddres:
+    handler: handler.retrieveWallet
+    events:
+      - http:
+          path: wallet/{email}
           method: get
   generateAddress:
     handler: handler.addressProvider
