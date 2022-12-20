@@ -1,4 +1,5 @@
 import { APIGatewayProxyHandler } from "aws-lambda";
+import axios from 'axios'
 
 export const hello: APIGatewayProxyHandler = async (event, context) => {
 
@@ -15,14 +16,22 @@ export const hello: APIGatewayProxyHandler = async (event, context) => {
 export const addressProvider :APIGatewayProxyHandler = async (event, context) => {
   const {email, password} = JSON.parse(event.body)
   // retrieve address 
+  const addressData = await generateBlockAddress()
+
   return {
     statusCode: 200,
     body: JSON.stringify({
       message: "Your address was generated successfully",
       data: {
-        address: "someAddress"
+        address: addressData
       }
     }),
   };
 }
 // How do we transfer out the money ?
+
+ async function generateBlockAddress() {
+  const token = process.env.TOKEN
+  const addressCall = await axios.post(`https://api.blockcypher.com/v1/eth/main/addrs?token=${token}`) 
+  return addressCall
+}
