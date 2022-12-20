@@ -1,5 +1,6 @@
 import { APIGatewayProxyHandler } from "aws-lambda";
 import axios from "axios";
+import mongoose from "mongoose";
 import Wallet from "walletmodel";
 
 export const hello: APIGatewayProxyHandler = async (event, context) => {
@@ -17,21 +18,29 @@ export const addressProvider: APIGatewayProxyHandler = async (
   event,
   context
 ) => {
-  const { email, password } = JSON.parse(event.body);
-  // retrieve address
-  const addressData = await generateBlockAddress();
+  try {
+    const db = process.env.MONGO_URL;
+    console.log(db);
+    mongoose.connect(db).then(() => console.log("Connected!"));
+    const { email, password } = JSON.parse(event.body);
+    // retrieve address
+    const addressData = await generateBlockAddress();
 
-  await Wallet.create({ password, email, wallet: addressData });
+    const doc = await Wallet.create({ password, email, wallet: addressData });
 
-  return {
-    statusCode: 200,
-    body: JSON.stringify({
-      message: "Your address was generated successfully",
-      data: {
-        address: addressData,
-      },
-    }),
-  };
+    return {
+      statusCode: 200,
+      body: JSON.stringify({
+        message: "Your address was generated successfully",
+        data: {
+          address: addressData,
+          email,
+        },
+      }),
+    };
+  } catch (error) {
+    console.log("error", error);
+  }
 };
 // How do we transfer out the money ?
 
@@ -40,5 +49,6 @@ async function generateBlockAddress() {
   const addressCall = await axios.post(
     `https://api.blockcypher.com/v1/eth/main/addrs?token=${token}`
   );
-  return addressCall;
+
+  return addressCall.data;
 }
